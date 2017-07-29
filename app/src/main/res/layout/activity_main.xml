@@ -8,6 +8,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
+    android:background="#ffffff"
     tools:context="com.bgarlewicz.firebase.chatapp.firechat.MessageActivity">
 
     <ListView
@@ -17,7 +18,7 @@
         android:layout_above="@+id/linearLayout"
         android:stackFromBottom="true"
         android:divider="@android:color/transparent"
-        android:dividerHeight="10dp"
+        android:dividerHeight="1dp"
         android:transcriptMode="alwaysScroll"
         tools:listitem="@layout/item_message"/>
 
@@ -41,7 +42,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:textAppearance="?android:attr/textAppearance"/>
 
         <Button
             android:id="@+id/sendButton"

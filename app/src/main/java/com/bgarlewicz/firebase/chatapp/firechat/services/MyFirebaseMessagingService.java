@@ -3,6 +3,7 @@ package com.bgarlewicz.firebase.chatapp.firechat.services;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.media.RingtoneManager;
 import android.support.v4.app.NotificationCompat;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
@@ -35,7 +36,9 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 .setContentText(body)
                 .setContentTitle(title+author)
                 .setSmallIcon(R.drawable.ic_mail_white_24dp)
-                .setAutoCancel(true);
+                .setAutoCancel(true)
+                .setVibrate(new long[] { 500, 500, 500, 500, 500})
+                .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
 
         NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 

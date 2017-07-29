@@ -1,18 +1,3 @@
-/**
- * Copyright Google Inc. All Rights Reserved.
- * <p/>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * <p/>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p/>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package com.bgarlewicz.firebase.chatapp.firechat;
 
 import android.Manifest;
@@ -20,6 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -27,6 +13,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputFilter;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -36,6 +23,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bgarlewicz.firebase.chatapp.firechat.utils.SharedPrefUtils;
 import com.bumptech.glide.Glide;
 import com.firebase.ui.auth.BuildConfig;
 import com.firebase.ui.database.FirebaseListAdapter;
@@ -48,10 +36,12 @@ import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.bgarlewicz.firebase.chatapp.firechat.utils.SharedPrefUtils;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import butterknife.BindDrawable;
@@ -232,6 +222,21 @@ public class MessageActivity extends AppCompatActivity {
     private FirebaseListAdapter<FirechatMessage> getFirebaseListAdapter() {
         return new FirebaseListAdapter<FirechatMessage>(this, FirechatMessage.class, R.layout.item_message, mMessagesDatabaseReference) {
             @Override
+            public View getView(int position, View view, ViewGroup viewGroup) {
+
+                FirechatMessage message = getItem(position);
+
+                if (mUsername.equals(message.getSender())){
+                    View newView = getLayoutInflater().inflate(R.layout.item_message_mine, viewGroup, false);
+                    populateView(newView, message, position);
+                    return newView;
+
+                } else {
+                    return super.getView(position, null, viewGroup);
+                }
+            }
+
+            @Override
             protected void populateView(View view, FirechatMessage firechatMessages, int position) {
 
                 ImageView photoImageView = (ImageView) view.findViewById(R.id.photoImageView);
@@ -239,6 +244,13 @@ public class MessageActivity extends AppCompatActivity {
                 TextView authorTextView = (TextView) view.findViewById(R.id.nameTextView);
 
                 FirechatMessage message = getItem(position);
+
+                String previousSender;
+                if (position == 0){
+                    previousSender = mUserUid;
+                } else {
+                    previousSender = getItem(position-1).getSenderUid();
+                }
 
                 boolean isPhoto = message.getPhotoUrl() != null;
                 if (isPhoto) {
@@ -251,14 +263,15 @@ public class MessageActivity extends AppCompatActivity {
                     messageTextView.setVisibility(View.VISIBLE);
                     photoImageView.setVisibility(View.GONE);
                     messageTextView.setText(message.getText());
-                    if(mUsername.equals(message.getSender())) {
-                        messageTextView.setBackground(msgLoggedUserBackground);
+                }
+
+                if (!message.getSenderUid().equals(mUserUid)) {
+                    if (previousSender.equals(message.getSenderUid())) {
+                        authorTextView.setVisibility(View.GONE);
                     } else {
-                        messageTextView.setBackground(msgOtherUserBackground);
+                        authorTextView.setText(message.getSender() + "  -  " + getMessageTime(message.getTimestamp()));
                     }
                 }
-                authorTextView.setText(message.getSender());
-
             }
         };
     }
@@ -307,5 +320,33 @@ public class MessageActivity extends AppCompatActivity {
         intent.setType("image/jpg");
         intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
         startActivityForResult(Intent.createChooser(intent, choosePicture), RC_PHOTO_PICKER);
+    }
+
+    private String getMessageTime(long timestamp){
+        String date;
+        SimpleDateFormat sDateFormat = new SimpleDateFormat("EEE, MMM d", getCurrentLocale());
+        SimpleDateFormat sTimeFormat = new SimpleDateFormat("HH:mm", getCurrentLocale());
+        final long DAY_MILLIS = 24 * 3600 * 1000;
+
+        long currentTime = Calendar.getInstance().getTime().getTime();
+        long timeDiff = currentTime-timestamp;
+
+        Date dateDate = new Date(timestamp);
+
+        if (timeDiff < (DAY_MILLIS)) {
+            date = sTimeFormat.format(dateDate);
+        } else {
+            date = sDateFormat.format(dateDate);
+        }
+
+        return date;
+    }
+
+    public Locale getCurrentLocale(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
+            return getResources().getConfiguration().getLocales().get(0);
+        } else{
+            return getResources().getConfiguration().locale;
+        }
     }
 }
