@@ -8,8 +8,8 @@
 
     <ImageView
         android:id="@+id/photoImageView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="80dp"
+        android:layout_height="120dp"
         android:adjustViewBounds="true" />
 
     <TextView
@@ -27,7 +27,7 @@
         android:layout_weight="0"
         android:textAppearance="?android:attr/textAppearance"
         tools:text="Message"
-        android:background="@drawable/msg_others_background"
+        android:background="?attr/backgroundOtherMessage"
         android:layout_marginRight="50dp"/>
 
 </LinearLayout>

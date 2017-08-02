@@ -1,28 +1,27 @@
 <resources>
-
-    <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <!-- Customize your theme here. -->
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
-
-        <item name="android:colorButtonNormal">@drawable/button_selector</item>
-        <item name="colorButtonNormal">@drawable/button_selector</item>
-        <item name="android:buttonStyle">@style/FriendlyButtonStyle</item>
-    </style>
-
-    <style name="FriendlyButtonStyle" parent="Widget.AppCompat.Button">
-        <item name="android:textColor">@color/colorTitle</item>
-
-    </style>
-
-    <style name="AppTheme.NoActionBar">
+    <style name="NoActionBarRed" parent="Theme.AppCompat.Light.DarkActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorMyMessage">@color/colorMyMessageRed</item>
+        <item name="colorOtherMessage">@color/colorOtherMessageRed</item>
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
+        <item name="backgroundMyMessage">@drawable/msg_logged_user_background</item>
+        <item name="backgroundOtherMessage">@drawable/msg_others_background</item>
+        <item name="firechatLogo">@mipmap/ic_fire</item>
     </style>
 
-    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
-
-    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+    <style name="NoActionBarBlue" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="colorPrimary">@color/colorPrimaryBlue</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDarkBlue</item>
+        <item name="colorMyMessage">@color/colorMyMessageBlue</item>
+        <item name="colorOtherMessage">@color/colorOtherMessageBlue</item>
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
+        <item name="backgroundMyMessage">@drawable/msg_logged_user_background_blue</item>
+        <item name="backgroundOtherMessage">@drawable/msg_others_background_blue</item>
+        <item name="firechatLogo">@mipmap/ic_fire_blue</item>
+    </style>
 </resources>

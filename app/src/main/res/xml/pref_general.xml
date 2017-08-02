@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <ListPreference
+        android:defaultValue="@string/pref_style"
+        android:entries="@array/pref_style_options"
+        android:entryValues="@array/pref_style_values"
+        android:key="@string/pref_style_key"
+        android:title="@string/pref_style_label" />
+
+</PreferenceScreen>

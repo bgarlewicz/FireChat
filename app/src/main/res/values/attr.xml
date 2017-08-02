@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="colorMyMessage" format="reference|color"/>
+    <attr name="colorOtherMessage" format="reference|color"/>
+    
+    <attr name="backgroundMyMessage" format="reference"/>
+    <attr name="backgroundOtherMessage" format="reference"/>
+
+    <attr name="firechatLogo" format="reference"/>
+</resources>

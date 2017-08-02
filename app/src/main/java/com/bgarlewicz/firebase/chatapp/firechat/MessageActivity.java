@@ -1,19 +1,18 @@
 package com.bgarlewicz.firebase.chatapp.firechat;
 
-import android.Manifest;
 import android.content.Intent;
-import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.text.InputFilter;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -21,10 +20,12 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.bgarlewicz.firebase.chatapp.firechat.utils.PhotoUtils;
 import com.bgarlewicz.firebase.chatapp.firechat.utils.SharedPrefUtils;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.SimpleTarget;
 import com.firebase.ui.auth.BuildConfig;
 import com.firebase.ui.database.FirebaseListAdapter;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -49,19 +50,22 @@ import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import butterknife.OnItemClick;
 import butterknife.OnTextChanged;
+
+import static com.bgarlewicz.firebase.chatapp.firechat.utils.PhotoUtils.RC_PHOTO_PICKER;
 
 public class MessageActivity extends AppCompatActivity {
 
     public static final int DEFAULT_MSG_LENGTH_LIMIT = 160;
-    private static final int RC_PHOTO_PICKER = 432;
-    private static final int REQUEST_READ_EXTERNAL_STORAGE = 654;
 
     @BindView(R.id.progressBar) ProgressBar mProgressBar;
     @BindView(R.id.messageListView) ListView mMessageListView;
     @BindView(R.id.photoPickerButton) ImageButton mPhotoPickerButton;
     @BindView(R.id.messageEditText) EditText mMessageEditText;
     @BindView(R.id.sendButton) Button mSendButton;
+    @BindView(R.id.toolbar)
+    Toolbar toolbar;
 
     @BindDrawable(R.drawable.msg_logged_user_background) Drawable msgLoggedUserBackground;
     @BindDrawable(R.drawable.msg_others_background) Drawable msgOtherUserBackground;
@@ -90,10 +94,14 @@ public class MessageActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        SharedPrefUtils.useTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         ButterKnife.bind(this);
+
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         mUsername = SharedPrefUtils.getUserName(this);
         mUserUid = SharedPrefUtils.getUserUid(this);
@@ -126,16 +134,9 @@ public class MessageActivity extends AppCompatActivity {
 
     @OnClick(R.id.photoPickerButton)
     public void pickPhoto() {
-
-        if(ContextCompat.checkSelfPermission(MessageActivity.this,
-                Manifest.permission.READ_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED){
-
-            ActivityCompat.requestPermissions(MessageActivity.this,
-                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                    REQUEST_READ_EXTERNAL_STORAGE);
-        } else{
-            launchImagePicker();
+        Intent intent = PhotoUtils.pickPhoto(this, this);
+        if (intent != null){
+            startActivityForResult(Intent.createChooser(intent, getString(R.string.choose_picture)), RC_PHOTO_PICKER);
         }
     }
 
@@ -179,17 +180,7 @@ public class MessageActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case REQUEST_READ_EXTERNAL_STORAGE: {
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    launchImagePicker();
-                } else {
-                    Toast.makeText(this, permissionDenied, Toast.LENGTH_SHORT).show();
-                }
-                break;
-            }
-        }
+        PhotoUtils.onRequestPermission(requestCode, permissions, grantResults, this);
     }
 
     @Override
@@ -226,7 +217,7 @@ public class MessageActivity extends AppCompatActivity {
 
                 FirechatMessage message = getItem(position);
 
-                if (mUsername.equals(message.getSender())){
+                if (mUserUid.equals(message.getSenderUid())){
                     View newView = getLayoutInflater().inflate(R.layout.item_message_mine, viewGroup, false);
                     populateView(newView, message, position);
                     return newView;
@@ -239,7 +230,7 @@ public class MessageActivity extends AppCompatActivity {
             @Override
             protected void populateView(View view, FirechatMessage firechatMessages, int position) {
 
-                ImageView photoImageView = (ImageView) view.findViewById(R.id.photoImageView);
+                final ImageView photoImageView = (ImageView) view.findViewById(R.id.photoImageView);
                 TextView messageTextView = (TextView) view.findViewById(R.id.messageTextView);
                 TextView authorTextView = (TextView) view.findViewById(R.id.nameTextView);
 
@@ -258,7 +249,15 @@ public class MessageActivity extends AppCompatActivity {
                     photoImageView.setVisibility(View.VISIBLE);
                     Glide.with(photoImageView.getContext())
                             .load(message.getPhotoUrl())
-                            .into(photoImageView);
+                            .asBitmap()
+                            .override(80, 120)
+                            .centerCrop()
+                            .into(new SimpleTarget<Bitmap>() {
+                                @Override
+                                public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
+                                    photoImageView.setImageBitmap(resource);
+                                }
+                            });
                 } else {
                     messageTextView.setVisibility(View.VISIBLE);
                     photoImageView.setVisibility(View.GONE);
@@ -274,6 +273,16 @@ public class MessageActivity extends AppCompatActivity {
                 }
             }
         };
+    }
+
+    @OnItemClick(R.id.messageListView)
+    public void showFullscreenPhoto(AdapterView<?> parent, int position){
+        FirechatMessage message = (FirechatMessage) parent.getItemAtPosition(position);
+        if(message.getPhotoUrl()!=null) {
+            Intent intent = new Intent(getApplicationContext(), FullscreenPhotoActivity.class);
+            intent.putExtra(FullscreenPhotoActivity.PHOTO_URI, message.getPhotoUrl());
+            startActivity(intent);
+        }
     }
 
     private void setMessageLength() {
@@ -313,13 +322,6 @@ public class MessageActivity extends AppCompatActivity {
     private void applyLengthLimit() {
         Long textLength = mFirebaseRemoteConfig.getLong(FRIENDLY_MESSAGE_LENGTH_KEY);
         mMessageEditText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(textLength.intValue())});
-    }
-
-    private void launchImagePicker() {
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("image/jpg");
-        intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
-        startActivityForResult(Intent.createChooser(intent, choosePicture), RC_PHOTO_PICKER);
     }
 
     private String getMessageTime(long timestamp){

@@ -1,8 +1,7 @@
 <resources>
-    <string name="app_name">Friendly Chat</string>
+    <string name="app_name">FireChat</string>
     <string name="sign_out">Sign Out</string>
     <string name="send_button_label">Send</string>
-    <string name="title_activity_main2">Main2Activity</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
@@ -27,4 +26,25 @@
     <string name="user_uid_extra">USER_UID_EXTRA</string>
     <string name="user_name_extra">USER_NAME_EXTRA</string>
     <string name="sender_uid">senderUid</string>
+    <string name="drawer_open">Open drawer</string>
+    <string name="drawer_closed">Closed drawer</string>
+    <string name="logout_title">Logout</string>
+    <string name="log_out_label">Log Out</string>
+    <string name="change_picture_label">Change Picture</string>
+    <string name="change_name_label">Change Name</string>
+    <string name="edit_profile_title">Edit Profile</string>
+    <string name="shared_pref_user_photo_key">pref_user_photo_key</string>
+    <string name="button_ok">OK</string>
+    <string name="button_cancel">Cancel</string>
+    <string name="new_username">New username</string>
+
+    <string name="title_activity_fullscreen_photo">FullscreenPhotoActivity</string>
+
+    <string name="pref_style">NoActionBarRed</string>
+    <string name="blue_theme_label">Blue Theme</string>
+    <string name="red_theme_label">Red Theme</string>
+    <string name="blue_theme_value">NoActionBarBlue</string>
+    <string name="red_theme_value">NoActionBarRed</string>
+    <string name="pref_style_key">theme_key</string>
+    <string name="pref_style_label">Theme</string>
 </resources>

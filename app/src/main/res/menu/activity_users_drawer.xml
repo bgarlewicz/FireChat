@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:title="@string/edit_profile_title">
+        <menu>
+            <item
+                android:id="@+id/nav_change_username"
+                android:icon="@drawable/ic_edit"
+                android:title="@string/change_name_label" />
+            <item
+                android:id="@+id/nav_change_profile_pic"
+                android:icon="@drawable/ic_photo"
+                android:title="@string/change_picture_label" />
+        </menu>
+    </item>
+
+    <item android:title="@string/action_settings">
+        <menu>
+            <item
+                android:id="@+id/nav_settings"
+                android:icon="@drawable/ic_settings"
+                android:title="@string/action_settings" />
+        </menu>
+    </item>
+
+    <item android:title="@string/logout_title">
+        <menu>
+            <item
+                android:id="@+id/nav_log_out"
+                android:icon="@drawable/ic_logout"
+                android:title="@string/log_out_label" />
+        </menu>
+    </item>
+
+</menu>

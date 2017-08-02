@@ -1,5 +1,6 @@
 package com.bgarlewicz.firebase.chatapp.firechat.utils;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -86,5 +87,40 @@ public final class SharedPrefUtils {
         SharedPreferences.Editor editor = sp.edit();
         editor.putInt(tokenStateKey, tokenStateValue);
         editor.apply();
+    }
+
+    public static String getUserPhoto(Context context){
+
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+
+        String userPhoto = context.getString(R.string.shared_pref_user_photo_key);
+
+        return sp.getString(userPhoto, null);
+    }
+
+    public static void setUserPhoto(Context context, String userPhoto){
+
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+
+        String userPhotoKey = context.getString(R.string.shared_pref_user_photo_key);
+
+        SharedPreferences.Editor editor = sp.edit();
+        editor.putString(userPhotoKey, userPhoto);
+        editor.apply();
+    }
+
+    public static void useTheme(Activity activity){
+
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(activity);
+
+        String themeKey = activity.getString(R.string.pref_style_key);
+
+        String prefTheme = sp.getString(themeKey, activity.getString(R.string.pref_style));
+
+        if(prefTheme.equals(activity.getString(R.string.red_theme_value))){
+            activity.setTheme(R.style.NoActionBarRed);
+        } else if(prefTheme.equals(activity.getString(R.string.blue_theme_value))) {
+            activity.setTheme(R.style.NoActionBarBlue);
+        }
     }
 }

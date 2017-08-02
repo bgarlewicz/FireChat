@@ -7,8 +7,8 @@
 
     <ImageView
         android:id="@+id/photoImageView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="80dp"
+        android:layout_height="120dp"
         android:adjustViewBounds="true" />
 
     <TextView
@@ -17,7 +17,7 @@
         android:layout_height="wrap_content"
         tools:text="Message"
         android:textAppearance="?android:attr/textAppearance"
-        android:background="@drawable/msg_logged_user_background"
+        android:background="?attr/backgroundMyMessage"
         android:layout_marginLeft="50dp"
         android:layout_gravity="right"/>
 
