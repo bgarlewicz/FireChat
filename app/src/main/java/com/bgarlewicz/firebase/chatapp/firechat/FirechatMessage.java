@@ -1,19 +1,12 @@
-/**
- * Copyright Google Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package com.bgarlewicz.firebase.chatapp.firechat;
+
+import android.content.Context;
+import android.os.Build;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 public class FirechatMessage {
 
@@ -37,6 +30,38 @@ public class FirechatMessage {
         this.receiverUid = receiverUid;
         this.photoUrl = photoUrl;
         this.timestamp = timestamp;
+    }
+
+    public static String getMessageTime(Context context, long timestamp) {
+        String date;
+        SimpleDateFormat sDateFormat = new SimpleDateFormat("EEE, MMM d HH:mm", getCurrentLocale(context));
+        SimpleDateFormat sTimeFormat = new SimpleDateFormat("HH:mm", getCurrentLocale(context));
+        final long DAY_SEC = 24 * 3600;
+
+        long currentTime = Calendar.getInstance().getTime().getTime();
+        long timeDiff = getTimeDiffInSec(timestamp, currentTime);
+
+        Date dateDate = new Date(timestamp);
+
+        if (timeDiff < (DAY_SEC)) {
+            date = sTimeFormat.format(dateDate);
+        } else {
+            date = sDateFormat.format(dateDate);
+        }
+
+        return date;
+    }
+
+    private static Locale getCurrentLocale(Context context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            return context.getResources().getConfiguration().getLocales().get(0);
+        } else {
+            return context.getResources().getConfiguration().locale;
+        }
+    }
+
+    public static long getTimeDiffInSec(long firstTimestamp, long secondTimestamp) {
+        return (secondTimestamp - firstTimestamp) / 1000;
     }
 
     public String getText() {

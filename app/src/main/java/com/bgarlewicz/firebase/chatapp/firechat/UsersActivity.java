@@ -38,6 +38,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.theartofdev.edmodo.cropper.CropImage;
+import com.theartofdev.edmodo.cropper.CropImageView;
 
 import java.util.Arrays;
 
@@ -53,14 +55,34 @@ public class UsersActivity extends AppCompatActivity implements NavigationView.O
 
     private static final int RC_SIGN_IN = 123;
     private static final String TAG = UsersActivity.class.getSimpleName();
-
+    @BindString(R.string.anonymus_user)
+    String ANONYMOUS;
+    @BindString(R.string.firebase_users_child)
+    String firebaseUsersChild;
+    @BindString(R.string.greetings)
+    String greetings;
+    @BindString(R.string.user_uid_extra)
+    String userUidExtra;
+    @BindString(R.string.user_name_extra)
+    String userNameExtra;
+    @BindString(R.string.firebase_chat_photos_child)
+    String firebaseChatPhotosChild;
+    @BindView(R.id.users_list_view)
+    ListView mUserListView;
+    @BindView(R.id.users_progress_bar)
+    ProgressBar mProgressBar;
+    @BindView(R.id.drawer_layout)
+    DrawerLayout mDrawer;
+    @BindView(R.id.toolbar)
+    Toolbar toolbar;
+    @BindView(R.id.nav_view)
+    NavigationView mNavView;
     private FirebaseDatabase mFirebaseDatabase;
     private DatabaseReference mUsersDatabaseReference;
     private FirebaseAuth mFirebaseAuth;
     private FirebaseAuth.AuthStateListener mFirebaseStateListener;
     private StorageReference mPhotosStorageReference;
     private FirebaseStorage mFirebaseStorage;
-
     private FirebaseListAdapter mUserAdapter;
     private String mUsername;
     private String mUserUid;
@@ -69,19 +91,6 @@ public class UsersActivity extends AppCompatActivity implements NavigationView.O
     private TextView mNavUserName;
     private TextView mNavUserEmail;
     private ImageView mNavImageView;
-
-    @BindString(R.string.anonymus_user) String ANONYMOUS;
-    @BindString(R.string.firebase_users_child) String firebaseUsersChild;
-    @BindString(R.string.greetings) String greetings;
-    @BindString(R.string.user_uid_extra) String userUidExtra;
-    @BindString(R.string.user_name_extra) String userNameExtra;
-    @BindString(R.string.firebase_chat_photos_child) String firebaseChatPhotosChild;
-
-    @BindView(R.id.userListView) ListView mUserListView;
-    @BindView(R.id.userProgressBar) ProgressBar mProgressBar;
-    @BindView(R.id.drawer_layout) DrawerLayout mDrawer;
-    @BindView(R.id.toolbar) Toolbar toolbar;
-    @BindView(R.id.nav_view) NavigationView mNavView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -165,8 +174,8 @@ public class UsersActivity extends AppCompatActivity implements NavigationView.O
             @Override
             protected void populateView(View view, User user, int position) {
 
-                ImageView userImageView = (ImageView) view.findViewById(R.id.userPhotoImageView);
-                TextView userTextView = (TextView) view.findViewById(R.id.userNameTextView);
+                ImageView userImageView = (ImageView) view.findViewById(R.id.item_user_image_view);
+                TextView userTextView = (TextView) view.findViewById(R.id.user_name_text_view);
 
                 User currentUser = getItem(position);
 
@@ -214,7 +223,7 @@ public class UsersActivity extends AppCompatActivity implements NavigationView.O
         }
     }
 
-    @OnItemClick(R.id.userListView)
+    @OnItemClick(R.id.users_list_view)
     public void showMessages(AdapterView<?> parent, int position){
         User user = (User) parent.getItemAtPosition(position);
         Intent intent = new Intent(getApplicationContext(), MessageActivity.class);
@@ -248,10 +257,17 @@ public class UsersActivity extends AppCompatActivity implements NavigationView.O
                 dialogFragment.show(getFragmentManager(), ChangeNameDialogFragment.TAG);
                 return true;
             case R.id.nav_change_profile_pic:
-                Intent intent = PhotoUtils.pickPhoto(this, this);
-                if (intent != null){
-                    startActivityForResult(Intent.createChooser(intent, getString(R.string.choose_picture)), RC_PHOTO_PICKER);
-                }
+//                Intent intent = PhotoUtils.pickPhoto(this, this);
+//                if (intent != null){
+//                    startActivityForResult(Intent.createChooser(intent, getString(R.string.choose_picture)), RC_PHOTO_PICKER);
+//                }
+                CropImage.activity()
+                        .setGuidelines(CropImageView.Guidelines.ON)
+                        .setActivityTitle("My Crop")
+                        .setCropShape(CropImageView.CropShape.OVAL)
+                        .setFixAspectRatio(true)
+                        .setRequestedSize(300, 400)
+                        .start(this);
                 return true;
             case R.id.nav_settings:
                 startActivity(new Intent(this, SettingsActivity.class));
@@ -308,6 +324,38 @@ public class UsersActivity extends AppCompatActivity implements NavigationView.O
                     }
                 }
             });
+        } else if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+            CropImage.ActivityResult result = CropImage.getActivityResult(data);
+            if (resultCode == RESULT_OK) {
+                Toast.makeText(this, "Cropping successful, Sample: " + result.getSampleSize(), Toast.LENGTH_LONG).show();
+                Uri selectedPhotoUri = result.getUri();
+                StorageReference storageReference = mPhotosStorageReference.child(selectedPhotoUri.getLastPathSegment());
+                UploadTask uploadTask = storageReference.putFile(selectedPhotoUri);
+                uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        Uri downloadUri = taskSnapshot.getDownloadUrl();
+                        if (downloadUri != null) {
+                            final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                            UserProfileChangeRequest changeRequest = new UserProfileChangeRequest.Builder()
+                                    .setPhotoUri(downloadUri)
+                                    .build();
+
+                            user.updateProfile(changeRequest).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    if (task.isSuccessful()) {
+                                        Log.d(TAG, "User profile updated.");
+                                        initializeSigningIn(user);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
+                Toast.makeText(this, "Cropping failed: " + result.getError(), Toast.LENGTH_LONG).show();
+            }
         }
     }
 }

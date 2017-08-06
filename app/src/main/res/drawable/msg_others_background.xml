@@ -2,13 +2,12 @@
 <shape
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
-    <corners
-        android:radius="25dp"/>
+    <corners android:radius="@dimen/msg_shape_radius" />
     <padding
-        android:left="15dp"
-        android:top="5dp"
-        android:right="15dp"
-        android:bottom="5dp" />
+        android:bottom="@dimen/msg_shape_vertical_padding"
+        android:left="@dimen/msg_shape_horizontal_padding"
+        android:right="@dimen/msg_shape_horizontal_padding"
+        android:top="@dimen/msg_shape_vertical_padding" />
     <solid
         android:color="@color/colorOtherMessageRed" />
 </shape>

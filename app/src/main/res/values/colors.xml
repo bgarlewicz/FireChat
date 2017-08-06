@@ -13,4 +13,9 @@
     <color name="colorBackground">#ffffff</color>
     <color name="colorAccent">#bd1d00</color>
 
+    <color name="colorDefaultSendButton">#A2A28D</color>
+
+    <color name="colorTitleRed">#000000</color>
+    <color name="colorTitleBlue">#ffffff</color>
+
 </resources>

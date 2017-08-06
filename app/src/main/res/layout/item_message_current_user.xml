@@ -1,0 +1,39 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/msg_item_date_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        tools:text="Name" />
+
+    <ImageView
+        android:id="@+id/msg_item_image_view"
+        android:layout_width="@dimen/msg_item_image_width"
+        android:layout_height="@dimen/msg_item_image_height"
+        android:layout_gravity="bottom|end"
+        android:adjustViewBounds="true" />
+
+    <TextView
+        android:id="@+id/msg_item_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginStart="@dimen/msg_item_curr_user_margin"
+        android:background="?attr/background_msg_current_user"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="@color/colorPrimaryDarkBlue"
+        tools:text="Message" />
+
+    <FrameLayout
+        android:id="@+id/msg_item_divider"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/msg_item_divider"
+        android:visibility="gone" />
+
+</LinearLayout>

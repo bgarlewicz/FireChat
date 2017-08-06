@@ -1,26 +1,38 @@
-<LinearLayout android:id="@+id/back_menu_ll"
-    android:layout_width="fill_parent"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/app_name_container"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
+    android:layout_marginEnd="@dimen/action_bar_margins"
     android:gravity="end"
-    android:layout_marginRight="30dp"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    android:orientation="horizontal">
+
+    <TextView
+        android:id="@+id/chat_user_name_text_view"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginEnd="@dimen/action_bar_margins"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textColor="?attr/color_title"
+        android:visibility="gone" />
 
     <ImageView
         android:id="@+id/logo"
         android:layout_width="wrap_content"
-        android:layout_height="40dp"
-        android:src="?attr/firechatLogo"
-        android:layout_gravity="center"/>
-    <TextView
+        android:layout_height="@dimen/logo_size"
+        android:layout_gravity="end"
+        android:src="?attr/firechat_logo" />
+
+    <com.bgarlewicz.firebase.chatapp.firechat.views.TitleView
         android:id="@+id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/app_name"
-        android:gravity="end"
         android:layout_gravity="center"
-        android:textSize="20sp"
-        android:fontFamily="serif-thin"
-        android:textAppearance="@style/Base.TextAppearance.AppCompat.Headline"/>
+        android:gravity="end"
+        android:text="@string/app_name"
+        android:textColor="?attr/color_title"
+        android:textSize="@dimen/app_name_text_size" />
 
 </LinearLayout>

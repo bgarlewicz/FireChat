@@ -1,49 +1,41 @@
 package com.bgarlewicz.firebase.chatapp.firechat;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.InputFilter;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.bgarlewicz.firebase.chatapp.firechat.utils.ColorUtils;
 import com.bgarlewicz.firebase.chatapp.firechat.utils.PhotoUtils;
 import com.bgarlewicz.firebase.chatapp.firechat.utils.SharedPrefUtils;
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.animation.GlideAnimation;
-import com.bumptech.glide.request.target.SimpleTarget;
-import com.firebase.ui.auth.BuildConfig;
 import com.firebase.ui.database.FirebaseListAdapter;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
-import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
 
 import butterknife.BindDrawable;
 import butterknife.BindString;
@@ -53,26 +45,40 @@ import butterknife.OnClick;
 import butterknife.OnItemClick;
 import butterknife.OnTextChanged;
 
+import static com.bgarlewicz.firebase.chatapp.firechat.FirechatMessage.getTimeDiffInSec;
 import static com.bgarlewicz.firebase.chatapp.firechat.utils.PhotoUtils.RC_PHOTO_PICKER;
 
 public class MessageActivity extends AppCompatActivity {
 
-    public static final int DEFAULT_MSG_LENGTH_LIMIT = 160;
-
-    @BindView(R.id.progressBar) ProgressBar mProgressBar;
-    @BindView(R.id.messageListView) ListView mMessageListView;
-    @BindView(R.id.photoPickerButton) ImageButton mPhotoPickerButton;
-    @BindView(R.id.messageEditText) EditText mMessageEditText;
-    @BindView(R.id.sendButton) Button mSendButton;
+    @BindView(R.id.msg_progress_bar)
+    ProgressBar mProgressBar;
+    @BindView(R.id.messages_list_view)
+    ListView mMessageListView;
+    @BindView(R.id.new_msg_photo_picker_button)
+    ImageButton mPhotoPickerButton;
+    @BindView(R.id.new_message_edit_text)
+    EditText mMessageEditText;
+    @BindView(R.id.new_msg_send_button)
+    Button mSendButton;
     @BindView(R.id.toolbar)
     Toolbar toolbar;
+    @BindView(R.id.title)
+    TextView appNameTextView;
+    @BindView(R.id.chat_user_name_text_view)
+    TextView userNameTextView;
 
-    @BindDrawable(R.drawable.msg_logged_user_background) Drawable msgLoggedUserBackground;
+    @BindDrawable(R.drawable.msg_current_user_background)
+    Drawable msgLoggedUserBackground;
     @BindDrawable(R.drawable.msg_others_background) Drawable msgOtherUserBackground;
+    @BindDrawable(R.drawable.ic_photo)
+    Drawable photoIcon;
+    @BindDrawable(R.drawable.ic_send)
+    Drawable sendIcon;
 
-    @BindString(R.string.msg_length_limit) String FRIENDLY_MESSAGE_LENGTH_KEY;
     @BindString(R.string.firebase_messages_child) String firebaseMessageChild;
     @BindString(R.string.firebase_chat_photos_child) String firebaseChatPhotosChild;
+    @BindString(R.string.firebase_users_child)
+    String firebaseUsersChild;
     @BindString(R.string.permission_denied) String permissionDenied;
     @BindString(R.string.choose_picture) String choosePicture;
     @BindString(R.string.user_uid_extra) String receiverUidExtra;
@@ -82,48 +88,60 @@ public class MessageActivity extends AppCompatActivity {
 
     private String mUsername;
     private String mUserUid;
-    private String receiverUsername;
-    private String receiverUserUid;
+    private String mReceiverUsername;
+    private String mReceiverUserUid;
 
     private FirebaseDatabase mFirebaseDatabase;
     private DatabaseReference mMessagesDatabaseReference;
     private FirebaseStorage mFirebaseStorage;
     private StorageReference mPhotosStorageReference;
-    private FirebaseRemoteConfig mFirebaseRemoteConfig;
+    private DatabaseReference mUsersDatabaseReference;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         SharedPrefUtils.useTheme(this);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_message);
 
         ButterKnife.bind(this);
+        photoIcon.setColorFilter(new PorterDuffColorFilter(
+                ColorUtils.getColorFromAttr(this, R.attr.colorPrimary),
+                PorterDuff.Mode.SRC_IN));
+        sendIcon.setColorFilter(new PorterDuffColorFilter(
+                getResources().getColor(R.color.colorDefaultSendButton),
+                PorterDuff.Mode.SRC_IN));
+
 
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
 
         mUsername = SharedPrefUtils.getUserName(this);
         mUserUid = SharedPrefUtils.getUserUid(this);
 
         Bundle bundle = getIntent().getExtras();
         if (bundle != null){
-            receiverUsername = bundle.getString(receiverNameExtra);
-            receiverUserUid = bundle.getString(receiverUidExtra);
+            mReceiverUsername = bundle.getString(receiverNameExtra);
+            mReceiverUserUid = bundle.getString(receiverUidExtra);
         }
 
         mFirebaseDatabase = FirebaseDatabase.getInstance();
-        mMessagesDatabaseReference = mFirebaseDatabase.getReference().child(firebaseMessageChild).child(getChatRoom(mUserUid, receiverUserUid));
+        mMessagesDatabaseReference = mFirebaseDatabase.getReference().child(firebaseMessageChild)
+                .child(getChatRoom(mUserUid, mReceiverUserUid));
+        mUsersDatabaseReference = mFirebaseDatabase.getReference().child(firebaseUsersChild);
         mFirebaseStorage = FirebaseStorage.getInstance();
         mPhotosStorageReference = mFirebaseStorage.getReference().child(firebaseChatPhotosChild);
-        mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
 
         mMessageAdapter = getFirebaseListAdapter();
         mMessageListView.setAdapter(mMessageAdapter);
 
         mProgressBar.setVisibility(ProgressBar.INVISIBLE);
+        appNameTextView.setVisibility(View.GONE);
+        userNameTextView.setVisibility(View.VISIBLE);
+        userNameTextView.setText(mReceiverUsername);
 
-        setMessageLength();
     }
 
     @Override
@@ -132,7 +150,7 @@ public class MessageActivity extends AppCompatActivity {
         mMessageAdapter.cleanup();
     }
 
-    @OnClick(R.id.photoPickerButton)
+    @OnClick(R.id.new_msg_photo_picker_button)
     public void pickPhoto() {
         Intent intent = PhotoUtils.pickPhoto(this, this);
         if (intent != null){
@@ -140,20 +158,19 @@ public class MessageActivity extends AppCompatActivity {
         }
     }
 
-    @OnClick(R.id.sendButton)
+    @OnClick(R.id.new_msg_send_button)
     public void sendMessage(){
         FirechatMessage firechatMessage = new FirechatMessage(mMessageEditText.getText().toString(),
                                                                 mUsername,
                                                                 mUserUid,
-                                                                receiverUsername,
-                                                                receiverUserUid,
+                mReceiverUsername,
+                mReceiverUserUid,
                                                                 null,
                                                                 Calendar.getInstance().getTime().getTime());
 
         mMessagesDatabaseReference.push().setValue(firechatMessage);
-
-
         mMessageEditText.setText("");
+        mMessageEditText.clearFocus();
     }
 
     private String getChatRoom(String firstUid, String secondUid) {
@@ -168,12 +185,19 @@ public class MessageActivity extends AppCompatActivity {
         return chatRoom;
     }
 
-    @OnTextChanged(value = R.id.messageEditText)
+    @OnTextChanged(value = R.id.new_message_edit_text)
     public void afterTextChanged(CharSequence charSequence){
+
         if (charSequence.toString().trim().length() > 0) {
             mSendButton.setEnabled(true);
+            sendIcon.setColorFilter(new PorterDuffColorFilter(
+                    ColorUtils.getColorFromAttr(this, R.attr.colorPrimary),
+                    PorterDuff.Mode.SRC_IN));
         } else {
             mSendButton.setEnabled(false);
+            sendIcon.setColorFilter(new PorterDuffColorFilter(
+                    getResources().getColor(R.color.colorDefaultSendButton),
+                    PorterDuff.Mode.SRC_IN));
         }
     }
 
@@ -198,8 +222,8 @@ public class MessageActivity extends AppCompatActivity {
                         FirechatMessage firechatMessage = new FirechatMessage(null,
                                 mUsername,
                                 mUserUid,
-                                receiverUsername,
-                                receiverUserUid,
+                                mReceiverUsername,
+                                mReceiverUserUid,
                                 downloadUri.toString(),
                                 Calendar.getInstance().getTime().getTime());
                         mMessagesDatabaseReference.push().setValue(firechatMessage);
@@ -218,10 +242,9 @@ public class MessageActivity extends AppCompatActivity {
                 FirechatMessage message = getItem(position);
 
                 if (mUserUid.equals(message.getSenderUid())){
-                    View newView = getLayoutInflater().inflate(R.layout.item_message_mine, viewGroup, false);
+                    View newView = getLayoutInflater().inflate(R.layout.item_message_current_user, viewGroup, false);
                     populateView(newView, message, position);
                     return newView;
-
                 } else {
                     return super.getView(position, null, viewGroup);
                 }
@@ -230,34 +253,35 @@ public class MessageActivity extends AppCompatActivity {
             @Override
             protected void populateView(View view, FirechatMessage firechatMessages, int position) {
 
-                final ImageView photoImageView = (ImageView) view.findViewById(R.id.photoImageView);
-                TextView messageTextView = (TextView) view.findViewById(R.id.messageTextView);
-                TextView authorTextView = (TextView) view.findViewById(R.id.nameTextView);
+                final ImageView photoImageView = (ImageView) view.findViewById(R.id.msg_item_image_view);
+                TextView messageTextView = (TextView) view.findViewById(R.id.msg_item_text_view);
+                final TextView authorTextView = (TextView) view.findViewById(R.id.msg_item_date_text_view);
+                final ImageView authorPhoto = (ImageView) view.findViewById(R.id.msg_item_user_photo);
+                FrameLayout divider = (FrameLayout) view.findViewById(R.id.msg_item_divider);
 
-                FirechatMessage message = getItem(position);
+                final FirechatMessage message = getItem(position);
 
-                String previousSender;
-                if (position == 0){
-                    previousSender = mUserUid;
+                DatabaseReference ref = mUsersDatabaseReference.child(message.getSenderUid());
+
+                String nextSender;
+                if (position == getCount() - 1) {
+                    nextSender = mUserUid;
                 } else {
-                    previousSender = getItem(position-1).getSenderUid();
+                    nextSender = getItem(position + 1).getSenderUid();
+                }
+
+                long previousTimestamp;
+                if (position == 0){
+                    previousTimestamp = 0;
+                } else {
+                    previousTimestamp = getItem(position - 1).getTimestamp();
                 }
 
                 boolean isPhoto = message.getPhotoUrl() != null;
                 if (isPhoto) {
                     messageTextView.setVisibility(View.GONE);
                     photoImageView.setVisibility(View.VISIBLE);
-                    Glide.with(photoImageView.getContext())
-                            .load(message.getPhotoUrl())
-                            .asBitmap()
-                            .override(80, 120)
-                            .centerCrop()
-                            .into(new SimpleTarget<Bitmap>() {
-                                @Override
-                                public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
-                                    photoImageView.setImageBitmap(resource);
-                                }
-                            });
+                    PhotoUtils.setImageWithGlide(photoImageView, message.getPhotoUrl(), 80, 120);
                 } else {
                     messageTextView.setVisibility(View.VISIBLE);
                     photoImageView.setVisibility(View.GONE);
@@ -265,90 +289,42 @@ public class MessageActivity extends AppCompatActivity {
                 }
 
                 if (!message.getSenderUid().equals(mUserUid)) {
-                    if (previousSender.equals(message.getSenderUid())) {
-                        authorTextView.setVisibility(View.GONE);
-                    } else {
-                        authorTextView.setText(message.getSender() + "  -  " + getMessageTime(message.getTimestamp()));
+                    if (!nextSender.equals(message.getSenderUid())) {
+                        ref.addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                User user = dataSnapshot.getValue(User.class);
+                                PhotoUtils.setImageWithGlide(authorPhoto, user.getPhotoUrl());
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+                            }
+                        });
                     }
+                }
+
+                if (!nextSender.equals(message.getSenderUid())) {
+                    divider.setVisibility(View.VISIBLE);
+                }
+
+                if (getTimeDiffInSec(previousTimestamp, message.getTimestamp()) > 600) {
+                    authorTextView.setText(FirechatMessage.getMessageTime(getApplicationContext(), message.getTimestamp()));
+                } else {
+                    authorTextView.setVisibility(View.GONE);
                 }
             }
         };
     }
 
-    @OnItemClick(R.id.messageListView)
+    @OnItemClick(R.id.messages_list_view)
     public void showFullscreenPhoto(AdapterView<?> parent, int position){
+        mMessageEditText.clearFocus();
         FirechatMessage message = (FirechatMessage) parent.getItemAtPosition(position);
         if(message.getPhotoUrl()!=null) {
             Intent intent = new Intent(getApplicationContext(), FullscreenPhotoActivity.class);
             intent.putExtra(FullscreenPhotoActivity.PHOTO_URI, message.getPhotoUrl());
             startActivity(intent);
-        }
-    }
-
-    private void setMessageLength() {
-        FirebaseRemoteConfigSettings rcSettings = new FirebaseRemoteConfigSettings.Builder()
-                .setDeveloperModeEnabled(BuildConfig.DEBUG)
-                .build();
-        mFirebaseRemoteConfig.setConfigSettings(rcSettings);
-
-        Map<String, Object> defaultConfigMap = new HashMap<>();
-        defaultConfigMap.put(FRIENDLY_MESSAGE_LENGTH_KEY, DEFAULT_MSG_LENGTH_LIMIT);
-        mFirebaseRemoteConfig.setDefaults(defaultConfigMap);
-        fetchConfig();
-    }
-
-    private void fetchConfig() {
-        long cacheExpiration = 3600;
-
-        if(mFirebaseRemoteConfig.getInfo().getConfigSettings().isDeveloperModeEnabled()){
-            cacheExpiration = 0;
-        }
-
-        mFirebaseRemoteConfig.fetch(cacheExpiration)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                mFirebaseRemoteConfig.activateFetched();
-                applyLengthLimit();
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                applyLengthLimit();
-            }
-        });
-    }
-
-    private void applyLengthLimit() {
-        Long textLength = mFirebaseRemoteConfig.getLong(FRIENDLY_MESSAGE_LENGTH_KEY);
-        mMessageEditText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(textLength.intValue())});
-    }
-
-    private String getMessageTime(long timestamp){
-        String date;
-        SimpleDateFormat sDateFormat = new SimpleDateFormat("EEE, MMM d", getCurrentLocale());
-        SimpleDateFormat sTimeFormat = new SimpleDateFormat("HH:mm", getCurrentLocale());
-        final long DAY_MILLIS = 24 * 3600 * 1000;
-
-        long currentTime = Calendar.getInstance().getTime().getTime();
-        long timeDiff = currentTime-timestamp;
-
-        Date dateDate = new Date(timestamp);
-
-        if (timeDiff < (DAY_MILLIS)) {
-            date = sTimeFormat.format(dateDate);
-        } else {
-            date = sDateFormat.format(dateDate);
-        }
-
-        return date;
-    }
-
-    public Locale getCurrentLocale(){
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
-            return getResources().getConfiguration().getLocales().get(0);
-        } else{
-            return getResources().getConfiguration().locale;
         }
     }
 }

@@ -1,27 +1,25 @@
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="80dp"
-    android:layout_margin="15dp"
-    android:orientation="horizontal"
-    android:background="@drawable/msg_others_background">
+    android:layout_height="@dimen/item_user_container_height"
+    android:layout_margin="@dimen/item_user_container_margin"
+    android:background="@drawable/msg_others_background"
+    android:orientation="horizontal">
 
-    <ImageView
-        android:id="@+id/userPhotoImageView"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:adjustViewBounds="true"
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/item_user_image_view"
+        android:layout_width="@dimen/item_user_photo_size"
+        android:layout_height="@dimen/item_user_photo_size"
         android:layout_gravity="center"
         tools:background="@color/cardview_dark_background"/>
 
     <TextView
-        android:id="@+id/userNameTextView"
+        android:id="@+id/user_name_text_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginEnd="@dimen/item_user_name_margin"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        tools:text="Name"
-        android:layout_marginLeft="40dp"
-        android:layout_gravity="center"/>
+        tools:text="Name" />
 
 </LinearLayout>

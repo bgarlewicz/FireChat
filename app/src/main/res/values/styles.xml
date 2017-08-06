@@ -4,12 +4,16 @@
         <item name="windowNoTitle">true</item>
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorMyMessage">@color/colorMyMessageRed</item>
-        <item name="colorOtherMessage">@color/colorOtherMessageRed</item>
+        <item name="color_msg_current_user">@color/colorMyMessageRed</item>
+        <item name="color_msg_others">@color/colorOtherMessageRed</item>
+        <item name="color_title">@color/colorTitleRed</item>
+        <item name="colorControlNormal">@color/colorTitleRed</item>
         <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
-        <item name="backgroundMyMessage">@drawable/msg_logged_user_background</item>
-        <item name="backgroundOtherMessage">@drawable/msg_others_background</item>
-        <item name="firechatLogo">@mipmap/ic_fire</item>
+        <item name="background_msg_current_user">@drawable/msg_current_user_background</item>
+        <item name="background_msg_others">@drawable/msg_others_background</item>
+        <item name="firechat_logo">@mipmap/ic_fire</item>
+        <item name="colorControlActivated">@color/colorPrimaryDark</item>
+        <item name="colorControlHighlight">@color/colorPrimaryDark</item>
     </style>
 
     <style name="NoActionBarBlue" parent="Theme.AppCompat.Light.DarkActionBar">
@@ -17,11 +21,15 @@
         <item name="windowNoTitle">true</item>
         <item name="colorPrimary">@color/colorPrimaryBlue</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDarkBlue</item>
-        <item name="colorMyMessage">@color/colorMyMessageBlue</item>
-        <item name="colorOtherMessage">@color/colorOtherMessageBlue</item>
+        <item name="color_msg_current_user">@color/colorMyMessageBlue</item>
+        <item name="color_msg_others">@color/colorOtherMessageBlue</item>
+        <item name="color_title">@color/colorTitleBlue</item>
+        <item name="colorControlNormal">@color/colorTitleBlue</item>
         <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
-        <item name="backgroundMyMessage">@drawable/msg_logged_user_background_blue</item>
-        <item name="backgroundOtherMessage">@drawable/msg_others_background_blue</item>
-        <item name="firechatLogo">@mipmap/ic_fire_blue</item>
+        <item name="background_msg_current_user">@drawable/msg_current_user_background_blue</item>
+        <item name="background_msg_others">@drawable/msg_others_background_blue</item>
+        <item name="firechat_logo">@mipmap/ic_fire_blue</item>
+        <item name="colorControlActivated">@color/colorPrimaryBlue</item>
+        <item name="colorControlHighlight">@color/colorPrimaryBlue</item>
     </style>
 </resources>

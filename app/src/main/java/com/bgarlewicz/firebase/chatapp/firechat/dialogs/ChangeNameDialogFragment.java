@@ -5,19 +5,17 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.res.Resources;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.widget.Button;
 import android.widget.EditText;
 
 import com.bgarlewicz.firebase.chatapp.firechat.R;
+import com.bgarlewicz.firebase.chatapp.firechat.utils.ColorUtils;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -30,10 +28,6 @@ public class ChangeNameDialogFragment extends DialogFragment {
     OnNameChangedListener mNameChanged;
     int mColorId;
 
-    public interface OnNameChangedListener{
-        void onNameChanged(String changedName);
-    }
-
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 
@@ -44,7 +38,7 @@ public class ChangeNameDialogFragment extends DialogFragment {
         .setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                EditText usernameET = (EditText) getDialog().findViewById(R.id.usernameDialogET);
+                EditText usernameET = (EditText) getDialog().findViewById(R.id.username_dialog_edit_text);
                 final String newUsername = usernameET.getText().toString();
                 FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
                 UserProfileChangeRequest changeRequest = new UserProfileChangeRequest.Builder()
@@ -96,7 +90,7 @@ public class ChangeNameDialogFragment extends DialogFragment {
     }
 
     private void onAttachToContext(Context context) {
-        mColorId = getColorFromAttr(context, R.attr.colorPrimaryDark);
+        mColorId = ColorUtils.getColorFromAttr(context, R.attr.colorPrimaryDark);
         try{
             mNameChanged = (OnNameChangedListener) context;
         } catch (ClassCastException e){
@@ -104,11 +98,7 @@ public class ChangeNameDialogFragment extends DialogFragment {
         }
     }
 
-    private int getColorFromAttr(Context context, int colorAttrId) {
-        TypedValue typedValue = new TypedValue();
-        Resources.Theme theme = context.getTheme();
-        theme.resolveAttribute(colorAttrId, typedValue, true);
-        @ColorInt int color = typedValue.data;
-        return color;
+    public interface OnNameChangedListener {
+        void onNameChanged(String changedName);
     }
 }

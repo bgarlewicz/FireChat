@@ -1,34 +1,33 @@
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="160dp"
-    android:background="?attr/colorMyMessage"
+    android:layout_height="@dimen/nav_header_container_height"
+    android:background="?attr/color_msg_current_user"
     android:gravity="bottom"
-    android:paddingTop="10dp"
-    android:paddingLeft="30dp">
+    android:orientation="vertical"
+    android:paddingEnd="@dimen/nav_header_padding_horizontal"
+    android:paddingStart="@dimen/nav_header_padding_horizontal"
+    android:paddingTop="@dimen/nav_header_padding_vertical">
 
-    <ImageView
+    <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/nav_image_view"
-        android:layout_width="80dp"
-        android:layout_height="80dp"/>
+        android:layout_width="@dimen/nav_header_image_size"
+        android:layout_height="@dimen/nav_header_image_size" />
 
     <TextView
         android:id="@+id/nav_user_name"
         android:layout_width="wrap_content"
-        android:layout_height="30dp"
-        android:layout_marginTop="5dp"
-        tools:text="User Name"
-        android:textAppearance="@style/TextAppearance.AppCompat.Headline"/>
+        android:layout_height="@dimen/nav_header_username_height"
+        android:layout_marginTop="@dimen/nav_header_username_margin"
+        android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+        tools:text="User Name" />
 
     <TextView
         android:id="@+id/nav_user_email"
         android:layout_width="wrap_content"
-        android:layout_height="20dp"
+        android:layout_height="@dimen/nav_header_email_height"
+        android:layout_marginBottom="@dimen/nav_header_email_margin"
         android:textAppearance="@style/TextAppearance.AppCompat.Small"
-        tools:text="User Email"
-        android:layout_marginBottom="10dp"/>
+        tools:text="User Email" />
 
 </LinearLayout>
