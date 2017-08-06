@@ -9,7 +9,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.widget.Button;
 import android.widget.EditText;
@@ -25,8 +24,8 @@ import com.google.firebase.auth.UserProfileChangeRequest;
 public class ChangeNameDialogFragment extends DialogFragment {
 
     public static final String TAG = ChangeNameDialogFragment.class.getSimpleName();
-    OnNameChangedListener mNameChanged;
-    int mColorId;
+    private OnNameChangedListener mNameChanged;
+    private int mColorId;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -38,8 +37,8 @@ public class ChangeNameDialogFragment extends DialogFragment {
         .setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                EditText usernameET = (EditText) getDialog().findViewById(R.id.username_dialog_edit_text);
-                final String newUsername = usernameET.getText().toString();
+                EditText newUsernameET = (EditText) getDialog().findViewById(R.id.username_dialog_edit_text);
+                final String newUsername = newUsernameET.getText().toString();
                 FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
                 UserProfileChangeRequest changeRequest = new UserProfileChangeRequest.Builder()
                         .setDisplayName(newUsername)
@@ -49,7 +48,6 @@ public class ChangeNameDialogFragment extends DialogFragment {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
                         if (task.isSuccessful()) {
-                            Log.d(TAG, "User profile updated.");
                             mNameChanged.onNameChanged(newUsername);
                         }
                     }

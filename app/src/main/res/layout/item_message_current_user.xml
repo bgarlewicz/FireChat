@@ -26,6 +26,8 @@
         android:layout_gravity="bottom|end"
         android:layout_marginStart="@dimen/msg_item_curr_user_margin"
         android:background="?attr/background_msg_current_user"
+        android:gravity="end|center_vertical"
+        android:minHeight="30dp"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:textColor="@color/colorPrimaryDarkBlue"
         tools:text="Message" />
